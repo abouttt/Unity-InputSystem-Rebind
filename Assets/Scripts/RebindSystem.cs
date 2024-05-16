@@ -6,8 +6,14 @@ public class RebindSystem : MonoBehaviour
 {
     public InputActionAsset Actions;
 
+    private readonly string SaveKey = "Rebinds";
     private InputActionRebindingExtensions.RebindingOperation _rebindingOp;
     private string _currentPath = null;
+
+    private void Awake()
+    {
+        Load();
+    }
 
     public void Rebind(InputAction action, Action completed, Action canceld)
     {
@@ -27,6 +33,23 @@ public class RebindSystem : MonoBehaviour
         {
             action.RemoveAllBindingOverrides();
         }
+    }
+
+    public void Save()
+    {
+        var rebinds = Actions.SaveBindingOverridesAsJson();
+        PlayerPrefs.SetString(SaveKey, rebinds);
+    }
+
+    public void Load()
+    {
+        var rebinds = PlayerPrefs.GetString(SaveKey);
+        Actions.LoadBindingOverridesFromJson(rebinds);
+    }
+
+    private void OnDestroy()
+    {
+        Save();
     }
 
     private void RebindCancel(InputAction action, Action callback)
