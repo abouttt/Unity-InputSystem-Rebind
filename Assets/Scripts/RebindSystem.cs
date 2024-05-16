@@ -4,28 +4,29 @@ using UnityEngine.InputSystem;
 
 public class RebindSystem : MonoBehaviour
 {
-    public GameObject PressUI;
+    public InputActionAsset Actions;
 
     private InputActionRebindingExtensions.RebindingOperation _rebindingOp;
     private string _currentPath = null;
 
-    private void Start()
-    {
-        PressUI.SetActive(false);
-    }
-
     public void Rebind(InputAction action, Action completed, Action canceld)
     {
-        PressUI.SetActive(true);
-
         action.Disable();
         _currentPath = action.bindings[0].hasOverrides ? action.bindings[0].overridePath : action.bindings[0].path;
         _rebindingOp = action.PerformInteractiveRebinding()
             .WithControlsExcluding("<Mouse>/rightButton")
             .WithCancelingThrough("<Mouse>/leftButton")
-            .OnCancel(op => RebindCancel(action, canceld))
             .OnComplete(op => RebindComplete(action, completed, canceld))
+            .OnCancel(op => RebindCancel(action, canceld))
             .Start();
+    }
+
+    public void RestoreDefaults()
+    {
+        foreach (var action in Actions)
+        {
+            action.RemoveAllBindingOverrides();
+        }
     }
 
     private void RebindCancel(InputAction action, Action callback)
@@ -76,7 +77,6 @@ public class RebindSystem : MonoBehaviour
 
     private void Clear()
     {
-        PressUI.SetActive(false);
         _rebindingOp.Dispose();
         _currentPath = null;
     }
